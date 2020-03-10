@@ -2,6 +2,8 @@ const scGap = 0.02
 const delay = 30
 const radiusFactor = 5
 const sizeFactor = 8
+const w = window.innerWidth
+const h = window.innerHeight
 
 class AnimatedScale {
 
@@ -12,9 +14,15 @@ class AnimatedScale {
     start(cb) {
         if (!this.animated) {
             this.animated = true
-            setInterval(() => {
-                scale += scGap
-                cb(Math.sin(scale * Math.PI))
+            const interval = setInterval(() => {
+                this.scale += scGap
+                cb(Math.sin(this.scale * Math.PI))
+                if (this.scale > 1) {
+                    cb(0)
+                    this.scale = 0
+                    clearInterval(interval)
+                    this.animated = false
+                }
             }, delay)
         }
     }
@@ -35,14 +43,29 @@ Vue.component('plus-button', {
     },
     methods: {
         start() {
-            animatedScale.start((sf) => {
+            this.animatedScale.start((sf) => {
                 this.sf = sf
             })
+        },
+        getCommonStyle() {
+            const rSize = this.getSize()
+            const size = Math.min(w, h) / sizeFactor
+            const width = `${size}px`
+            const height = `${size / 11}px`
+            const background = 'white'
+            const position = 'relative'
+            const left = `${-size / 2 + rSize / 2}px`
+            const top = `${-parseFloat(height) / 2 + rSize / 2}px`
+            return  {width, height, background, position, top, left}
+        },
+
+        getSize() {
+            return Math.min(w, h) / radiusFactor
         }
     },
     computed: {
         objStyle() {
-            const size = Math.min(w, h) / radiusFactor
+            const size = this.getSize()
             const position = 'absolute'
             const left = `${w / 2}px`
             const top = `${h / 2}px`
@@ -54,18 +77,11 @@ Vue.component('plus-button', {
             return {position, left, top, width, height, background, borderRadius, WebkitTransform}
         },
         plusStyle1() {
-            const size = Math.min(w, h) / sizeFactor
-            const width = `${size}px`
-            const height = `${size / 11}px`
-            const background = 'white'
-            const position = 'absolute'
-            const left = `${-size / 2}px`
-            const top = `${-parseFloat(height) / 2}px`
-            return  {width, height, background, position, top, left}
+            return this.getCommonStyle()
         },
 
         plusStyle2() {
-            const style = Object.assign({}, this.plusStyle1())
+            const style = Object.assign({}, this.getCommonStyle())
             style.WebkitTransform = `rotate(90deg)`
             return style
         }
@@ -74,5 +90,5 @@ Vue.component('plus-button', {
 })
 
 const vueInstance = new Vue({
-    el : '#app', 
+    el : '#app',
 })
