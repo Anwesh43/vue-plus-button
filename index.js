@@ -72,3 +72,7 @@ Vue.component('plus-button', {
     },
     template : '<div :style = "objStyle" @click = "start"><div :style = "plusStyle1"></div><div :style = "plusStyle2"></div></div>'
 })
+
+const vueInstance = new Vue({
+    el : '#app', 
+})
